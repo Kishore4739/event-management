@@ -17,27 +17,43 @@ public class SecurityConfig {
         this.customOAuth2UserService = customOAuth2UserService;
     }
 
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/login", "/login.html", "/register.html",
-                                "/css/**", "/js/**", "/images/**").permitAll()
-                        .anyRequest().authenticated()
-                )
-                .oauth2Login(oauth -> oauth
-                        .loginPage("/login.html")
-                        .userInfoEndpoint(userInfo -> userInfo
-                                .userService(customOAuth2UserService) // ✅ attach service
-                        )
-                        .defaultSuccessUrl("/dashboard.html", true)
-                )
-                .logout(logout -> logout
-                        .logoutSuccessUrl("/login.html")
-                        .permitAll()
-                )
-                .csrf(csrf -> csrf.disable()); // CSRF disabled for testing
+//    @Bean
+//    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+//        http
+//                .authorizeHttpRequests(auth -> auth
+//                        .requestMatchers("/", "/login", "/login.html", "/register.html",
+//                                "/css/**", "/js/**", "/images/**").permitAll()
+//                        .anyRequest().authenticated()
+//                )
+//                .oauth2Login(oauth -> oauth
+//                        .loginPage("/login.html")
+//                        .userInfoEndpoint(userInfo -> userInfo
+//                                .userService(customOAuth2UserService) // ✅ attach service
+//                        )
+//                        .defaultSuccessUrl("/dashboard.html", true)
+//                )
+//                .logout(logout -> logout
+//                        .logoutSuccessUrl("/login.html")
+//                        .permitAll()
+//                )
+//                .csrf(csrf -> csrf.disable()); // CSRF disabled for testing
+//
+//        return http.build();
+//    }
+@Bean
+public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    http
+            .csrf(csrf -> csrf.disable()) // disable CSRF for Postman
+            .authorizeHttpRequests(auth -> auth
+                    .requestMatchers("/api/users/**", "/api/events/**").permitAll() // allow APIs
+                    .anyRequest().authenticated()
+            )
+            .oauth2Login(oauth -> oauth
+                    .loginPage("/login.html")
+                    .defaultSuccessUrl("/dashboard.html", true)
+            );
 
-        return http.build();
-    }
+    return http.build();
+}
+
 }

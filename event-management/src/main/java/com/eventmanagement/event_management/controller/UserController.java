@@ -70,34 +70,54 @@ public class UserController {
 
 
 
+    @PostMapping("/registerEvent")
+    public ResponseEntity<?> registerForEvent(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+        String password = request.get("password");
+        String eventName = request.get("eventName");
 
+        // ✅ Validate input
+        if (email == null || password == null || eventName == null) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("status", "error", "message", "Email, password, and event name are required"));
+        }
 
-
-
-    // Register for Event
-    @PostMapping("/registerEvent/{eventId}")
-    public ResponseEntity<?> registerForEvent(@PathVariable Long eventId,
-                                              @RequestParam String email) {
+        // ✅ Find user
         Optional<User> userOpt = userRepo.findByEmail(email);
-        Optional<Event> eventOpt = eventRepo.findById(eventId);
-
-        if (userOpt.isEmpty() || eventOpt.isEmpty()) {
+        if (userOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("status", "error", "message", "User or Event not found"));
+                    .body(Map.of("status", "error", "message", "User not found"));
         }
 
         User user = userOpt.get();
+
+        // ✅ Check password
+        if (!user.getPassword().equals(password)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("status", "error", "message", "Invalid password"));
+        }
+
+        // ✅ Find event
+        Optional<Event> eventOpt = eventRepo.findByTitle(eventName);
+        if (eventOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("status", "error", "message", "Event not found"));
+        }
+
         Event event = eventOpt.get();
 
+        // ✅ Register user for event
         user.getRegisteredEvents().add(event);
         userRepo.save(user);
 
         return ResponseEntity.ok(Map.of(
                 "status", "success",
-                "message", "Registered for event successfully",
+                "message", "Registered for event: " + eventName,
                 "eventsAttended", user.getRegisteredEvents().size()
         ));
     }
+
+
 
     @GetMapping("/eventsAttended")
     public ResponseEntity<Map<String, Object>> getEventsAttended(@RequestParam String email) {
