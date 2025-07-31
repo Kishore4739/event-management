@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.*;
 
 @RestController
-@RequestMapping("/api/user")
+@RequestMapping("/api/users")
 public class UserController {
 
     @Autowired
@@ -50,7 +50,27 @@ public class UserController {
                 .body(Map.of("status", "error", "message", "Invalid email or password"));
     }
 
-        // Get current logged-in user (OAuth or Normal)
+    @GetMapping("/me")
+    public ResponseEntity<Map<String, Object>> getCurrentUser(OAuth2AuthenticationToken token,
+                                                              @RequestParam(required = false) String email) {
+        Optional<User> foundUser = Optional.empty();
+
+        if (token != null && token.isAuthenticated()) {
+            String oauthEmail = token.getPrincipal().getAttribute("email");
+            foundUser = userRepo.findByEmail(oauthEmail);
+        } else if (email != null) {
+            foundUser = userRepo.findByEmail(email);
+        }
+
+        return foundUser
+                .map(user -> ResponseEntity.ok(Map.of("status", "success", "user", user)))
+                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("status", "error", "message", "User not found")));
+    }
+
+
+
+
 
 
 

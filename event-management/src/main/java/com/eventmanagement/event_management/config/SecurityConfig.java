@@ -5,7 +5,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
@@ -17,31 +16,28 @@ public class SecurityConfig {
     public SecurityConfig(CustomOAuth2UserService customOAuth2UserService) {
         this.customOAuth2UserService = customOAuth2UserService;
     }
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(AbstractHttpConfigurer::disable) // 🔹 New way to disable CSRF
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/",
-                                "/login",
-                                "/login.html",
-                                "/register.html",
-                                "/css/**",
-                                "/js/**",
-                                "/api/users/register",  // Allow register
-                                "/api/users/login"      // Allow login
-                        ).permitAll()
+                        .requestMatchers("/", "/login", "/login.html", "/register.html",
+                                "/css/**", "/js/**", "/images/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth -> oauth
                         .loginPage("/login.html")
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(customOAuth2UserService) // ✅ attach service
+                        )
                         .defaultSuccessUrl("/dashboard.html", true)
-                );
+                )
+                .logout(logout -> logout
+                        .logoutSuccessUrl("/login.html")
+                        .permitAll()
+                )
+                .csrf(csrf -> csrf.disable()); // CSRF disabled for testing
 
         return http.build();
     }
-
-
-
 }

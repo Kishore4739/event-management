@@ -23,15 +23,15 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         String email = oAuth2User.getAttribute("email");
         String name = oAuth2User.getAttribute("name");
 
-        // Register if not exists
+        // Save or update in DB
         userRepository.findByEmail(email).orElseGet(() -> {
             User user = new User();
             user.setEmail(email);
             user.setName(name);
-            userRepository.save(user);
-            return user;
+            return userRepository.save(user);
         });
 
-        return oAuth2User;
+        return new CustomOAuth2User(oAuth2User); // ✅ return wrapped user
     }
 }
+

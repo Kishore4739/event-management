@@ -1,45 +1,59 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Login</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/style.css"/>
 </head>
 <body>
 <div class="container">
     <h2>Login</h2>
-    <input type="email" id="email" placeholder="Email" required>
-    <input type="password" id="password" placeholder="Password" required>
-    <button onclick="login()">Login</button>
-    <div class="link">Don't have an account? <a href="register.html">Register</a></div>
+    <form id="login-form">
+        <label for="email">Email</label>
+        <input type="email" id="email" required />
+        <label for="password">Password</label>
+        <input type="password" id="password" required />
+        <button type="submit">Login</button>
+    </form>
+
+    <p style="margin: 15px 0; text-align: center;">OR</p>
+
+    <!-- ✅ Google Login -->
+    <a href="/oauth2/authorization/google">
+        <button type="button" style="background-color: #4285F4; color: white;">Login with Google</button>
+    </a>
+
+    <div class="link" style="margin-top: 20px;">
+        Don't have an account? <a href="register.html">Register here</a>
+    </div>
 </div>
 
 <script>
-    function login() {
-        const credentials = {
-            email: document.getElementById("email").value,
-            password: document.getElementById("password").value
-        };
+    document.getElementById("login-form").addEventListener("submit", function (e) {
+        e.preventDefault();
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
 
-        fetch("http://localhost:8080/api/users/login", {
+        fetch("/api/users/login", {
             method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify(credentials)
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ email, password })
         })
         .then(res => {
-            if (res.ok) return res.json();
-            else throw new Error("Invalid login");
+            if (!res.ok) throw new Error("Invalid credentials");
+            return res.json();
         })
         .then(user => {
-            localStorage.setItem("userId", user.id);
-            window.location.href = "dashboard.html";
+            localStorage.setItem("email", user.email); // optional if needed elsewhere
+            window.location.href = "/dashboard.html";
         })
-        .catch(err => alert(err.message));
-    }
+        .catch(err => {
+            alert("Login failed: " + err.message);
+        });
+    });
 </script>
-<a href="/oauth2/authorization/google">
-    <button style="background:#db4437; color:white;">Login with Google</button>
-</a>
-
 </body>
 </html>
