@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Register</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="container">
+    <h2>Register</h2>
+    <input type="text" id="name" placeholder="Name" required>
+    <input type="email" id="email" placeholder="Email" required>
+    <input type="password" id="password" placeholder="Password" required>
+    <button onclick="register()">Register</button>
+    <div class="link">Already have an account? <a href="login.html">Login</a></div>
+</div>
+
+<script>
+    document.getElementById("registerForm").addEventListener("submit", async (e) => {
+     e.preventDefault();
+
+     const name = document.getElementById("name").value;
+     const email = document.getElementById("email").value;
+     const password = document.getElementById("password").value;
+
+     const response = await fetch("/api/users/register", {
+         method: "POST",
+         headers: {
+             "Content-Type": "application/json"
+         },
+         body: JSON.stringify({ name, email, password })
+     });
+
+     if (response.ok) {
+         alert("Registered Successfully");
+         window.location.href = "login.html";
+     } else {
+         alert("Registration Failed");
+     }
+ });
+
+</script>
+<a href="/oauth2/authorization/google">
+    <button style="background:#4285F4; color:white;">Register with Google</button>
+</a>
+
+</body>
+</html>
+

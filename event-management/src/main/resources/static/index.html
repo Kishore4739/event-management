@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Event Management - Home</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="container" style="width: 500px;">
+    <h2>Welcome to Event Management System</h2>
+
+    <button onclick="goToRegister()">Register</button>
+    <button onclick="goToLogin()">Login</button>
+    <button onclick="viewEvents()">View Events</button>
+
+    <div id="eventsSection" style="margin-top: 20px; display:none;">
+        <h3>Available Events</h3>
+        <ul id="eventsList"></ul>
+    </div>
+</div>
+
+<script>
+    // Navigation functions
+    function goToRegister() {
+        window.location.href = "register.html";
+    }
+    function goToLogin() {
+        window.location.href = "login.html";
+    }
+
+    // Function to view events
+    function viewEvents() {
+        const userId = localStorage.getItem("userId");
+
+        if (userId) {
+            // User is logged in (Form login)
+            fetch(`http://localhost:8080/api/users/${userId}/dashboard`)
+                .then(res => res.json())
+                .then(data => displayEvents(data.availableEvents));
+        } else {
+            // Try Google OAuth session
+            fetch(`http://localhost:8080/api/users/me`)
+                .then(res => {
+                    if (!res.ok) throw new Error("Not logged in");
+                    return res.json();
+                })
+                .then(data => {
+                    localStorage.setItem("userId", data.id); // Store for later use
+                    displayEvents(data.availableEvents);
+                })
+                .catch(() => {
+                    alert("Please login or register to view events.");
+                    goToLogin();
+                });
+        }
+    }
+
+    // Function to show events on page
+    function displayEvents(events) {
+        const eventsSection = document.getElementById("eventsSection");
+        const eventsList = document.getElementById("eventsList");
+
+        eventsList.innerHTML = "";
+        events.forEach(event => {
+            let li = document.createElement("li");
+            li.innerText = `${event.title} - ${event.date}`;
+            li.style.cursor = "pointer";
+            li.onclick = () => window.location.href = "dashboard.html";
+            eventsList.appendChild(li);
+        });
+
+        eventsSection.style.display = "block";
+    }
+</script>
+</body>
+</html>

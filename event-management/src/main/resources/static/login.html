@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="container">
+    <h2>Login</h2>
+    <input type="email" id="email" placeholder="Email" required>
+    <input type="password" id="password" placeholder="Password" required>
+    <button onclick="login()">Login</button>
+    <div class="link">Don't have an account? <a href="register.html">Register</a></div>
+</div>
+
+<script>
+    function login() {
+        const credentials = {
+            email: document.getElementById("email").value,
+            password: document.getElementById("password").value
+        };
+
+        fetch("http://localhost:8080/api/users/login", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(credentials)
+        })
+        .then(res => {
+            if (res.ok) return res.json();
+            else throw new Error("Invalid login");
+        })
+        .then(user => {
+            localStorage.setItem("userId", user.id);
+            window.location.href = "dashboard.html";
+        })
+        .catch(err => alert(err.message));
+    }
+</script>
+<a href="/oauth2/authorization/google">
+    <button style="background:#db4437; color:white;">Login with Google</button>
+</a>
+
+</body>
+</html>
